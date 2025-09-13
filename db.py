@@ -42,5 +42,30 @@ def criar_tabelas():
     )
     """)
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS lancamentos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            data TEXT NOT NULL,
+            tipo TEXT NOT NULL,
+            descricao TEXT NOT NULL,
+            valor REAL NOT NULL,
+            os_id INTEGER,
+            origem TEXT,
+            observacoes TEXT
+        )
+        """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS produtos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            categoria TEXT,
+            quantidade INTEGER DEFAULT 0,
+            preco_compra REAL DEFAULT 0.0,  -- preço unitário de compra
+            preco_venda REAL DEFAULT 0.0,   -- preço unitário de venda
+            data_cadastro TEXT DEFAULT (date('now'))
+        )
+        """)
+
     conn.commit()
     conn.close()

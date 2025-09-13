@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+
+import db
 from db import criar_tabelas, get_connection
 from adicionar_clientes import ClienteUI        # ajustar se seu arquivo for ui_clientes.py
 from clientes import listar_clientes
@@ -416,7 +418,7 @@ tree.configure(yscrollcommand=vsb.set)
 vsb.place(in_=tree, relx=1.0, relheight=1.0, bordermode="outside")
 
 # ----- init -----
-criar_tabelas()
+db.criar_tabelas()
 refresh_os_list()
 
 root.mainloop()

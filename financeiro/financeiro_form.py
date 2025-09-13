@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from financeiro.db_financeiro import get_connection
+from db import get_connection
 from datetime import datetime
 from ordens import listar_os
 

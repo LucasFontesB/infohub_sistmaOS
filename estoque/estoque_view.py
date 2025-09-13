@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk, messagebox, simpledialog
 from datetime import datetime
 from db import get_connection
-from estoque.db_estoque import criar_tabelas
 from financeiro.financeiro_form import abrir_form_lancamento
 
 def abrir_estoque(root):
@@ -307,5 +306,3 @@ def abrir_estoque(root):
     tk.Button(btn_frame, text="Atualizar Lista", command=carregar_estoque).pack(side="left", padx=5)
 
     carregar_estoque()
-
-criar_tabelas()

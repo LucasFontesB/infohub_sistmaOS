@@ -1,7 +1,6 @@
-from financeiro.db_financeiro import criar_tabelas
 import tkinter as tk
 from tkinter import ttk, messagebox
-from financeiro.db_financeiro import get_connection
+from db import get_connection
 from datetime import datetime
 
 def abrir_financeiro():
@@ -174,5 +173,3 @@ def abrir_financeiro():
     tk.Button(btn_frame, text="Adicionar", width=15, command=adicionar_lancamento).pack(side="left", padx=5)
     tk.Button(btn_frame, text="Editar", width=15, command=editar_lancamento).pack(side="left", padx=5)
     tk.Button(btn_frame, text="Deletar", width=15, command=deletar_lancamento).pack(side="left", padx=5)
-
-criar_tabelas()
