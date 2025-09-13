@@ -2,6 +2,7 @@ from financeiro.db_financeiro import criar_tabelas
 import tkinter as tk
 from tkinter import ttk, messagebox
 from financeiro.db_financeiro import get_connection
+from datetime import datetime
 
 def abrir_financeiro():
     win = tk.Toplevel()
@@ -66,7 +67,18 @@ def abrir_financeiro():
         conn.close()
 
         for r in rows:
-            tree.insert("", "end", values=r)
+            id_, data, tipo, descricao, valor, os_id, origem, observacoes = r
+            # Formatar data para DD/MM/YYYY
+            if data:
+                try:
+                    data_fmt = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
+                except:
+                    data_fmt = data
+            else:
+                data_fmt = ""
+
+            # Inserir na Treeview com a data formatada
+            tree.insert("", "end", values=(id_, data_fmt, tipo, descricao, valor, os_id, origem, observacoes))
 
     # Popula inicialmente
     refresh_lancamentos()
@@ -98,12 +110,33 @@ def abrir_financeiro():
 
         conn = get_connection()
         cur = conn.cursor()
-        cur.execute("SELECT id, data, tipo, descricao, valor, os_id, origem, observacoes FROM lancamentos ORDER BY data DESC")
+        cur.execute("""
+            SELECT id, data, tipo, descricao, valor, os_id, origem, observacoes 
+            FROM lancamentos 
+            ORDER BY id DESC
+        """)
         rows = cur.fetchall()
         conn.close()
 
         for r in rows:
-            tree.insert("", "end", values=r)
+            id_, data, tipo, descricao, valor, os_id, origem, observacoes = r
+
+            # Formatar data para DD/MM/YYYY
+            if data:
+                try:
+                    data_fmt = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
+                except:
+                    data_fmt = data
+            else:
+                data_fmt = ""
+
+            # Formatar valor para R$ xx,xx
+            if isinstance(valor, (int, float)):
+                valor_fmt = f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+            else:
+                valor_fmt = str(valor) if valor else "-"
+
+            tree.insert("", "end", values=(id_, data_fmt, tipo, descricao, valor_fmt, os_id, origem, observacoes))
 
     refresh_tree()
 

@@ -4,7 +4,7 @@ from financeiro.db_financeiro import get_connection
 from datetime import datetime
 from ordens import listar_os
 
-def abrir_form_lancamento(refresh_callback, lanc_id=None):
+def abrir_form_lancamento(refresh_callback, lanc_id=None, tipo=None, descricao=None, valor=None, origem=None):
     win = tk.Toplevel()
     win.title("Lançamento Financeiro")
     win.geometry("450x400")
@@ -41,6 +41,11 @@ def abrir_form_lancamento(refresh_callback, lanc_id=None):
     tk.Label(frm, text="Observações:").grid(row=5, column=0, sticky="nw")
     observ_txt = tk.Text(frm, width=30, height=4)
     observ_txt.grid(row=5, column=1, pady=3, sticky="w")
+
+    tipo_var.set(tipo or "Despesa")
+    descricao_txt.insert("1.0", descricao or "")
+    valor_var.set(str(valor) if valor is not None else "0.00")
+    origem_var.set(origem or "Outro")
 
     # ----- Função para salvar -----
     def salvar():

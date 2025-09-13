@@ -6,6 +6,9 @@ from clientes import listar_clientes
 from ordens import listar_os, adicionar_os, atualizar_os, excluir_os, buscar_os_por_id
 from Impressao import imprimir_os
 from financeiro.financeiro_view import abrir_financeiro
+from datetime import datetime
+from estoque.estoque_view import abrir_estoque
+from relatorios.relatorios_view import abrir_relatorio_financeiro
 
 
 TIPOS_EQUIPAMENTOS = ["Computador Desktop", "Notebook", "Impressora", "Outro"]
@@ -157,12 +160,22 @@ def refresh_os_list():
         r = list(r)
         _id = r[0] if len(r) > 0 else ""
         data = r[1] if len(r) > 1 else ""
+        if data:
+            try:
+                data = datetime.strptime(data, "%Y-%m-%d").strftime("%d/%m/%Y")
+            except ValueError:
+                pass  # caso a string não esteja no formato esperado, mantém como está
         cliente = r[2] if len(r) > 2 else ""
         equipamento = r[3] if len(r) > 3 else ""
         problema = r[4] if len(r) > 4 else ""
         total = r[5] if len(r) > 5 else ""
         status = r[6] if len(r) > 6 else ""
-        total_display = f"R$ {total:.2f}" if isinstance(total, (int, float)) else (str(total) if total else "-")
+        if isinstance(total, (int, float)):
+            total_display = f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        elif total:
+            total_display = str(total)
+        else:
+            total_display = "-"
         tree.insert("", "end", values=(_id, data, cliente, equipamento, problema, status, total_display))
 
 def abrir_editar_os(os_id):
@@ -338,11 +351,54 @@ tk.Button(frame_menu, text="Nova OS", width=20, command=abrir_nova_os).pack(pady
 tk.Button(frame_menu, text="Gestão de Clientes", width=20, command=abrir_clientes).pack(pady=6)
 tk.Button(frame_menu, text="Atualizar lista OS", width=20, command=refresh_os_list).pack(pady=6)
 tk.Button(frame_menu, text="Financeiro", width=20, command=abrir_financeiro).pack(pady=6)
+tk.Button(frame_menu, text="Estoque", width=20, command= lambda: abrir_estoque(root)).pack(pady=6)
+tk.Button(frame_menu, text="Relatórios", width=20, command=abrir_relatorio_financeiro).pack(pady=6)
 tk.Button(frame_menu, text="Sair", width=20, command=root.destroy).pack(side="bottom", pady=20)
 
 # conteúdo central
 frame_conteudo = tk.Frame(frame_principal)
 frame_conteudo.pack(side="left", fill="both", expand=True)
+
+frame_busca = tk.Frame(frame_conteudo)
+frame_busca.pack(pady=5)
+
+tk.Label(frame_busca, text="Buscar OS:").pack(side="left", padx=5)
+
+entrada_busca = tk.Entry(frame_busca, width=40)
+entrada_busca.pack(side="left", padx=5)
+
+
+def buscar_os():
+    termo = entrada_busca.get().strip().lower()
+    for item in tree.get_children():
+        tree.delete(item)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT os.id, os.data_entrada, clientes.nome, os.tipo_equipamento, 
+               os.servico_solicitado, os.status, os.total
+        FROM os
+        INNER JOIN clientes ON os.cliente_id = clientes.id
+        WHERE LOWER(clientes.nome) LIKE ? OR CAST(os.id AS TEXT) LIKE ?
+        """, (f"%{termo}%", f"%{termo}%"))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    for row in rows:
+        id_, data_entrada, nome, equipamento, problema, status, total = row
+        total_formatado = f"R$ {total:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        tree.insert("", "end", values=(id_, data_entrada, nome, equipamento, problema, status, total_formatado))
+
+tk.Button(frame_busca, text="Buscar", command=buscar_os).pack(side="left", padx=5)
+
+# botão para limpar a busca e voltar lista completa
+def limpar_busca():
+    entrada_busca.delete(0, tk.END)
+    refresh_os_list()
+
+tk.Button(frame_busca, text="Limpar", command=limpar_busca).pack(side="left", padx=5)
 
 tk.Label(frame_conteudo, text="Ordens de Serviço", font=("Arial", 16)).pack(pady=10)
 
