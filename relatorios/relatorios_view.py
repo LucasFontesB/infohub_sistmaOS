@@ -7,7 +7,7 @@ from db import get_connection
 def abrir_relatorio_financeiro():
     win = tk.Toplevel()
     win.title("Relatório Financeiro")
-    win.geometry("1450x500")
+    win.geometry("1450x550")
 
     frm_filtros = tk.Frame(win, padx=10, pady=10)
     frm_filtros.pack(fill="x")
@@ -30,6 +30,17 @@ def abrir_relatorio_financeiro():
         tree.heading(c, text=c)
         tree.column(c, anchor="center")
     tree.pack(fill="both", expand=True, padx=10, pady=10)
+
+    # Labels para total de receitas e despesas
+    frm_totais = tk.Frame(win, padx=10, pady=10)
+    frm_totais.pack(fill="x")
+
+    lbl_total_receitas = tk.Label(frm_totais, text="Total Receitas: R$ 0,00", font=("Arial", 12, "bold"))
+    lbl_total_receitas.pack(side="left", padx=20)
+    lbl_total_despesas = tk.Label(frm_totais, text="Total Despesas: R$ 0,00", font=("Arial", 12, "bold"))
+    lbl_total_despesas.pack(side="left", padx=20)
+    lbl_saldo = tk.Label(frm_totais, text="Saldo: R$ 0,00", font=("Arial", 12, "bold"))
+    lbl_saldo.pack(side="left", padx=20)
 
     # Função para atualizar o relatório
     def refresh_relatorio():
@@ -55,6 +66,9 @@ def abrir_relatorio_financeiro():
         conn.close()
 
         saldo = 0.0
+        total_receitas = 0.0
+        total_despesas = 0.0
+
         for r in rows:
             id_, data, tipo, descricao, valor, origem = r
 
@@ -68,13 +82,26 @@ def abrir_relatorio_financeiro():
             valor_num = float(valor)
             if tipo.lower() == "receita":
                 saldo += valor_num
+                total_receitas += valor_num
             else:
                 saldo -= valor_num
-            valor_fmt = f"R$ {valor_num:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                total_despesas += valor_num
 
+            valor_fmt = f"R$ {valor_num:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
             saldo_fmt = f"R$ {saldo:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
             tree.insert("", "end", values=(id_, data_fmt, tipo, descricao, valor_fmt, origem, saldo_fmt))
+
+        # Atualizar labels de totais
+        lbl_total_receitas.config(
+            text=f"Total Receitas: R$ {total_receitas:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        )
+        lbl_total_despesas.config(
+            text=f"Total Despesas: R$ {total_despesas:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        )
+        lbl_saldo.config(
+            text=f"Saldo: R$ {total_receitas - total_despesas:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        )
 
     btn_filtrar.config(command=refresh_relatorio)
     refresh_relatorio()  # carregar inicialmente
